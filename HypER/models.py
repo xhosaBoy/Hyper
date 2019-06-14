@@ -1,7 +1,6 @@
-import numpy as np
 import torch
 from torch.nn import functional as F, Parameter
-from torch.nn.init import xavier_normal_, xavier_uniform_
+from torch.nn.init import xavier_normal_
 
 
 class ConvE(torch.nn.Module):
@@ -81,8 +80,6 @@ class HypER(torch.nn.Module):
         fc1_length = self.in_channels * self.out_channels * self.filt_h * self.filt_w
         self.fc1 = torch.nn.Linear(d2, fc1_length)
 
-        self.loss = torch.nn.BCELoss()
-
     def init(self):
         xavier_normal_(self.E.weight.data)
         xavier_normal_(self.R.weight.data)
@@ -116,13 +113,11 @@ class HypER(torch.nn.Module):
         x = self.bn1(x)
         x = self.feature_map_drop(x)
 
-        x = x.view(e1.size(0), -1)
-        x = self.fc(x)
+        x = x.view(e1.size(0), -1)  # out 128 x 6144
+        x = self.fc(x)  # out shape 128 x 200
+        x = F.relu(x)
 
         x = self.hidden_drop(x)
-        x = self.bn2(x)
-
-        x = F.relu(x)
 
         logits = torch.mm(x, self.E.weight.transpose(1, 0))
         logits += self.b.expand_as(logits)

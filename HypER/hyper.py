@@ -52,6 +52,8 @@ class Experiment:
                        "feature_map_dropout": feature_map_dropout, "in_channels": in_channels,
                        "out_channels": out_channels, "filt_h": filt_h, "filt_w": filt_w}
 
+        self.loss = torch.nn.BCELoss()
+
     def get_data_idxs(self, data):
         data_idxs = [(self.entity_idxs[data[i][0]], self.relation_idxs[data[i][1]],
                       self.entity_idxs[data[i][2]]) for i in range(len(data))]
@@ -113,7 +115,6 @@ class Experiment:
                 logits[j, e2_idx[j]] = target_value
 
             sort_values, sort_idxs = torch.sort(logits, dim=1, descending=True)
-            # sort_idxs = sort_idxs.cpu().numpy()
 
             for j in range(data_batch.shape[0]):
 
@@ -196,7 +197,7 @@ class Experiment:
                 if self.label_smoothing:
                     targets = ((1.0 - self.label_smoothing) * targets) + (1.0 / targets.size(1))
 
-                loss = model.loss(predictions, targets)
+                loss = self.loss(predictions, targets)
                 accuracy = model.accuracy(logits, targets).item()
 
                 if j % (self.batch_size * 10) == 0:
