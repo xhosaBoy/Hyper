@@ -187,11 +187,14 @@ class Experiment:
                 e1_idx = torch.tensor(data_batch[:, 0])
                 r_idx = torch.tensor(data_batch[:, 1])
 
+                logger.debug(f'targets size: {targets.size()}')
+
                 if self.cuda:
                     e1_idx = e1_idx.cuda()
                     r_idx = r_idx.cuda()
 
                 logits = model.forward(e1_idx, r_idx)
+                logger.debug(f'logits size: {logits.size()}')
                 predictions = F.sigmoid(logits)
 
                 if self.label_smoothing:

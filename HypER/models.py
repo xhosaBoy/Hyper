@@ -90,14 +90,16 @@ class HypER(torch.nn.Module):
         k = self.fc1(r)
 
         k = k.view(-1, self.in_channels, self.out_channels, self.filt_h,
-                   self.filt_w)  # MB, in_channels, out_channels, filt_h, filt_w
+                   self.filt_w)  # MB, in_channels, out_channels, fh, fw
         k = k.view(k.size(0) * self.in_channels * self.out_channels, 1, self.filt_h,
                    self.filt_w)  # MB * in_channels * out_channels, fd, fh, fw
+
+        k = self.inp_drop(k)
 
         e1 = self.E(e1_idx).view(-1, 1, 1, self.E.weight.size(1))  # MB, in_channel, H, W
 
         x = self.bn0(e1)
-        x = self.inp_drop(e1)
+        x = self.inp_drop(x)
 
         x = x.permute(1, 0, 2, 3)  # in_channel, MB, H, W
 
@@ -114,6 +116,7 @@ class HypER(torch.nn.Module):
         x = self.feature_map_drop(x)
 
         x = x.view(e1.size(0), -1)  # out 128 x 6144
+
         x = self.fc(x)  # out shape 128 x 200
         x = F.relu(x)
 
